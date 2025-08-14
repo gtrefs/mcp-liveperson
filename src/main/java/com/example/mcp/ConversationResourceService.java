@@ -1,8 +1,7 @@
 package com.example.mcp;
 
-import io.modelcontextprotocol.spec.McpSchema.GetResourceResult;
+import io.modelcontextprotocol.spec.McpSchema.ReadResourceResult;
 import io.modelcontextprotocol.spec.McpSchema.Resource;
-import io.modelcontextprotocol.spec.McpSchema.ResourceUpdated;
 import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +34,7 @@ public class ConversationResourceService {
     private final Map<String, ConversationState> conversations = new ConcurrentHashMap<>();
 
     /** Subscribers waiting for updates on a given conversation resource. */
-    private final Map<String, Queue<Consumer<ResourceUpdated>>> subscribers = new ConcurrentHashMap<>();
+    private final Map<String, Queue<Consumer<ReadResourceResult>>> subscribers = new ConcurrentHashMap<>();
 
     public ConversationResourceService(LivePersonRestClient lp) {
         this.lp = lp;
@@ -80,30 +79,30 @@ public class ConversationResourceService {
         conversations.values().forEach(state ->
                 res.add(new Resource(state.uri,
                         "Conversation messages for consumer " + state.consumerId + " conversation " + state.conversationId,
-                        null)));
+                        "", "text/plain", null)));
         return res;
     }
 
     /** Return the resource data for the given URI. */
-    public GetResourceResult getResource(String uri) {
+    public ReadResourceResult getResource(String uri) {
         ConversationState state = conversations.get(uri);
         String text = "";
         if (state != null) {
             state.pruneOldMessages();
             text = state.messages.stream().map(m -> m.text).collect(Collectors.joining("\n"));
         }
-        return new GetResourceResult(uri, List.of(new TextResourceContents(text)));
+        return new ReadResourceResult(List.of(new TextResourceContents(uri, "text/plain", text)));
     }
 
     /** Subscribe for updates to the given resource URI. */
-    public void subscribe(String uri, Consumer<ResourceUpdated> sink) {
+    public void subscribe(String uri, Consumer<ReadResourceResult> sink) {
         subscribers.computeIfAbsent(uri, u -> new ConcurrentLinkedQueue<>()).add(sink);
     }
 
     private boolean notifySubscribers(String uri, String text) {
-        Queue<Consumer<ResourceUpdated>> list = subscribers.get(uri);
+        Queue<Consumer<ReadResourceResult>> list = subscribers.get(uri);
         if (list != null && !list.isEmpty()) {
-            ResourceUpdated update = new ResourceUpdated(uri, List.of(new TextResourceContents(text)));
+            ReadResourceResult update = new ReadResourceResult(List.of(new TextResourceContents(uri, "text/plain", text)));
             list.forEach(s -> s.accept(update));
             return true;
         }
