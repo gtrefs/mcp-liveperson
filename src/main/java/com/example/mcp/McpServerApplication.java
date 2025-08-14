@@ -5,7 +5,6 @@ import org.springframework.ai.tool.method.MethodToolCallbackProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import reactor.core.publisher.Hooks;
 
 @SpringBootApplication
 public class McpServerApplication {
@@ -18,4 +17,5 @@ public class McpServerApplication {
         // Auto-expose @Tool methods as MCP tools
         return MethodToolCallbackProvider.builder().toolObjects(tools).build();
     }
+
 }
