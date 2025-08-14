@@ -16,7 +16,7 @@ import io.modelcontextprotocol.spec.McpSchema.TextContent;
 public class ConversationPrompts {
 
     @Bean
-    public List<McpServerFeatures.SyncPromptSpecification> conversationPrompts() {
+    public List<McpServerFeatures.SyncPromptSpecification> prompts() {
         var prompt = new McpSchema.Prompt(
                 "conversation_flow",
                 "Guides the assistant to create a conversation, send messages, and finally close the conversation using the available tools.",
