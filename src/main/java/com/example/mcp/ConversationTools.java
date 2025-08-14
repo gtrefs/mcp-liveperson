@@ -14,10 +14,14 @@ import java.util.Map;
 public class ConversationTools {
     private final LivePersonRestClient lp;
     private final String brandId;
+    private final ConversationResourceService resources;
     private static final Logger log = LoggerFactory.getLogger(ConversationTools.class);
 
-    public ConversationTools(LivePersonRestClient lp, @Value("${lp.account-id}") String brandId) {
+    public ConversationTools(LivePersonRestClient lp,
+                             ConversationResourceService resources,
+                             @Value("${lp.account-id}") String brandId) {
         this.lp = lp;
+        this.resources = resources;
         this.brandId = brandId;
     }
 
@@ -56,6 +60,7 @@ public class ConversationTools {
                 }
             }
         }
+        resources.registerConversation(args.consumerId(), conversationId);
         return new CreateConversationResult(conversationId, mainDialogId, "CREATED");
     }
 
@@ -81,6 +86,7 @@ public class ConversationTools {
         String etag = entity.getHeaders().getFirst("ETag");
 
         lp.closeConversation(args.consumerId(), args.conversationId(), etag);
+        resources.unregisterConversation(args.consumerId(), args.conversationId());
         return new CloseConversationResult(args.conversationId(), "CLOSED");
     }
 

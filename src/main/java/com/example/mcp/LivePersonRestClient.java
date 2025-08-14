@@ -138,4 +138,14 @@ public class LivePersonRestClient {
                 .retrieve()
                 .toEntity(Map.class);
     }
+
+    // --- Messages ---
+    public Map<String, Object> getDialogMessages(String consumerId, String convId, String dialogId) {
+        String url = baseUrl() + "/v1/conversations/" + convId + "/dialogs/" + dialogId + "/messages";
+        return restClient.get()
+                .uri(url)
+                .headers(h -> h.addAll(baseHeaders(consumerId)))
+                .retrieve()
+                .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+    }
 }
