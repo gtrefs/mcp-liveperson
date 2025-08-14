@@ -1,0 +1,99 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Use Spring Boot parent so plugin versions (incl. spring-boot-maven-plugin) are managed -->
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.3.3</version>
+    <relativePath/>
+  </parent>
+
+  <groupId>com.example</groupId>
+  <artifactId>mcp-liveperson-server</artifactId>
+  <version>0.1.0</version>
+
+  <properties>
+    <java.version>21</java.version>
+    <spring.ai.version>1.0.1</spring.ai.version>
+  </properties>
+
+  <dependencies>
+    <!-- Spring AI MCP Server starter (WebMVC / HTTP-SSE transport) -->
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
+      <version>${spring.ai.version}</version>
+    </dependency>
+
+    <!-- JSON -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <!-- Boot runtime / logging / actuator -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-logging</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
+    <!-- Debug Agent for reactor -->
+    <dependency>
+      <groupId>io.projectreactor</groupId>
+      <artifactId>reactor-tools</artifactId>
+      <version>3.6.0</version>
+      <scope>runtime</scope>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>debug-reactor</id>
+      <properties>
+        <reactor.tools.jar>${settings.localRepository}/io/projectreactor/reactor-tools/3.6.0/reactor-tools-3.6.0.jar</reactor.tools.jar>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.5.1</version>
+            <configuration>
+              <mainClass>com.example.mcp.McpServerApplication</mainClass>
+              <arguments/>
+              <systemProperties>
+                <systemProperty>
+                  <key>javaagent</key>
+                  <value>${reactor.tools.jar}</value>
+                </systemProperty>
+              </systemProperties>
+              <executable>java</executable>
+              <commandlineArgs>-javaagent:${reactor.tools.jar}</commandlineArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>
