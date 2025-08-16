@@ -10,7 +10,7 @@ spring:
         sse-endpoint: /mcp/sse
         capabilities:
           tool: true
-          resource: false
+          resource: true
           prompt: true
           completion: false
 
