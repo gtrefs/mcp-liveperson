@@ -48,7 +48,7 @@ public class ConversationTools {
 
         List<LivePersonResponse.ConversationResponse.Dialog> dialogs = conv.dialogs();
         if (dialogs != null && !dialogs.isEmpty()) {
-            String id = dialogs.get(0).id();
+            String id = dialogs.getFirst().id();
             if (id != null) {
                 mainDialogId = id;
             }
