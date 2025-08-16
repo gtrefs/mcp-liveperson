@@ -24,11 +24,13 @@ public class ConversationPrompts {
 
         var promptSpec = new McpServerFeatures.SyncPromptSpecification(prompt, (exchange, request) -> {
             var userMessage = new PromptMessage(Role.USER, new TextContent("""
-                    Follow this workflow when interacting with LivePerson:
-                    1. Generate a random consumerId (for example, a UUID string) and keep it for this workflow.
-                    2. Call `create_conversation` with that consumerId, firstName and lastName to start a new conversation. Save the returned conversationId.
-                    3. For each user message, call `send_message` supplying the same consumerId, conversationId and the text to send.
-                    4. When all messages have been exchanged and the task is complete, call `close_conversation` with that consumerId and conversationId to end the conversation.
+                    Start the interactive LivePerson workflow:
+                       1. Generate a random consumerId (for example, a UUID string) and keep it for this workflow.
+                       2. Ask the user for their first name and last name.
+                       3. Once the user provides the names, call create_conversation using the new consumerId and the provided names.
+                       4. Ask the user for the message they want to send.
+                       5. Once the user provides the message, call send_message.
+                       6. Ask the user if they are finished. If they are, call close_conversation. If not, repeat from step 4.
                     For a new workflow, repeat from step 1 to obtain a new consumerId.
                     Only call these tools; do not fabricate responses.
                     """));
