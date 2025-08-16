@@ -3,10 +3,7 @@ package com.example.mcp;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
-public sealed interface LivePersonResponse permits LivePersonResponse.ConsumerResponse,
-        LivePersonResponse.ConversationResponse,
-        LivePersonResponse.PublishMessageResponse,
-        LivePersonResponse.CloseConversationResponse {
+public sealed interface LivePersonResponse {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     record ConsumerResponse(String id) implements LivePersonResponse {
