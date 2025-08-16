@@ -1,16 +1,16 @@
 package com.example.mcp.auth;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import java.time.Instant;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
@@ -23,8 +23,6 @@ public class AppJwtService {
     private final String clientSecret;
     private final int renewSkewSeconds;
     private final boolean useBearerPrefix;
-
-    private static final record Token(String value, Instant expiresAt) {}
 
     private final AtomicReference<Token> cached = new AtomicReference<>();
 
@@ -69,20 +67,28 @@ public class AppJwtService {
         form.add("client_id", clientId);
         form.add("client_secret", clientSecret);
 
-        Map<String, Object> resp = restClient.post()
+        TokenResponse resp = restClient.post()
                 .uri(url)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(form)
                 .retrieve()
-                .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+                .body(TokenResponse.class);
 
-        String accessToken = (String) resp.get("access_token");
-        int expiresIn = Integer.parseInt(String.valueOf(resp.getOrDefault("expires_in", 3600)));
-
-        return new Token(accessToken, Instant.now().plusSeconds(expiresIn));
+        return new Token(resp.accessToken(), Instant.now().plusSeconds(resp.expiresIn()));
     }
 
     private String headerValue(String token) {
         return useBearerPrefix ? ("Bearer " + token) : token;
     }
+
+    record Token(String value, Instant expiresAt) {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    sealed interface AuthResponse permits TokenResponse {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    record TokenResponse(@JsonProperty("access_token") String accessToken,
+                         @JsonProperty("expires_in") int expiresIn) implements AuthResponse {
+    }
+
 }

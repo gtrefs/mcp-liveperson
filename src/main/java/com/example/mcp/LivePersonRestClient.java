@@ -6,7 +6,6 @@ import com.example.mcp.auth.ConsumerJwsService.ConsumerIdentity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -66,7 +65,7 @@ public class LivePersonRestClient {
     }
 
     // --- Consumers ---
-    public Map putConsumer(String consumerId, Map<String, Object> body) {
+    public LivePersonResponse.ConsumerResponse putConsumer(String consumerId, Map<String, Object> body) {
         ConsumerIdentity identity = consumerJwsService.getConsumerJws(consumerId);
         String url = baseUrl() + "/v1/consumers/" + identity.lpConsumerId();
 
@@ -75,35 +74,35 @@ public class LivePersonRestClient {
                 .headers(h -> h.addAll(baseHeaders(consumerId)))
                 .body(body)
                 .retrieve()
-                .body(Map.class);
+                .body(LivePersonResponse.ConsumerResponse.class);
     }
 
     // --- Conversations ---
-    public Map createConversation(String consumerId, Map<String, Object> body) {
+    public LivePersonResponse.ConversationResponse createConversation(String consumerId, Map<String, Object> body) {
         ConsumerIdentity identity = consumerJwsService.getConsumerJws(consumerId);
         String url = baseUrl() + "/v1/consumers/" + identity.lpConsumerId() + "/conversations";
 
-        Map result = restClient.post()
+        LivePersonResponse.ConversationResponse result = restClient.post()
                 .uri(url)
                 .headers(h -> h.addAll(baseHeaders(consumerId)))
                 .body(body)
                 .retrieve()
-                .body(Map.class);
+                .body(LivePersonResponse.ConversationResponse.class);
 
         logger.info("Create conversation: {}", result);
         return result;
     }
 
-    public Map getConversationRaw(String consumerId, String convId) {
+    public LivePersonResponse.ConversationResponse getConversationRaw(String consumerId, String convId) {
         String url = baseUrl() + "/v1/conversations/" + convId;
         return restClient.get()
                 .uri(url)
                 .headers(h -> h.addAll(baseHeaders(consumerId)))
                 .retrieve()
-                .body(Map.class);
+                .body(LivePersonResponse.ConversationResponse.class);
     }
 
-    public Map closeConversation(String consumerId, String convId, String etag) {
+    public LivePersonResponse.CloseConversationResponse closeConversation(String consumerId, String convId, String etag) {
         String url = baseUrl() + "/v1/conversations/" + convId;
         Map<String, Object> stageUpdate = Map.of("stage", "CLOSE");
 
@@ -115,11 +114,11 @@ public class LivePersonRestClient {
                 })
                 .body(stageUpdate)
                 .retrieve()
-                .body(Map.class);
+                .body(LivePersonResponse.CloseConversationResponse.class);
     }
 
     // --- Dialogs & Messages ---
-    public Map<String, Object> publishMessage(String consumerId, String convId, Map<String, Object> body) {
+    public LivePersonResponse.PublishMessageResponse publishMessage(String consumerId, String convId, Map<String, Object> body) {
         String url = baseUrl() + "/v1/conversations/" + convId + "/dialogs/" + convId + "/messages";
 
         return restClient.post()
@@ -127,15 +126,15 @@ public class LivePersonRestClient {
                 .headers(h -> h.addAll(baseHeaders(consumerId)))
                 .body(body)
                 .retrieve()
-                .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+                .body(LivePersonResponse.PublishMessageResponse.class);
     }
 
-    public ResponseEntity<Map> getConversationEntity(String consumerId, String convId) {
+    public ResponseEntity<LivePersonResponse.ConversationResponse> getConversationEntity(String consumerId, String convId) {
         String url = baseUrl() + "/v1/conversations/" + convId;
         return restClient.get()
                 .uri(url)
                 .headers(h -> h.addAll(baseHeaders(consumerId)))
                 .retrieve()
-                .toEntity(Map.class);
+                .toEntity(LivePersonResponse.ConversationResponse.class);
     }
 }
