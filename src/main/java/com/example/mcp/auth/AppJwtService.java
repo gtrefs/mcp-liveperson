@@ -1,15 +1,14 @@
 package com.example.mcp.auth;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
@@ -24,8 +23,6 @@ public class AppJwtService {
     private final String clientSecret;
     private final int renewSkewSeconds;
     private final boolean useBearerPrefix;
-
-    private static final record Token(String value, Instant expiresAt) {}
 
     private final AtomicReference<Token> cached = new AtomicReference<>();
 
@@ -83,12 +80,15 @@ public class AppJwtService {
     private String headerValue(String token) {
         return useBearerPrefix ? ("Bearer " + token) : token;
     }
-}
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-sealed interface AuthResponse permits TokenResponse {}
+    record Token(String value, Instant expiresAt) {}
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-record TokenResponse(@JsonProperty("access_token") String accessToken,
-                     @JsonProperty("expires_in") int expiresIn) implements AuthResponse {
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    sealed interface AuthResponse permits TokenResponse {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    record TokenResponse(@JsonProperty("access_token") String accessToken,
+                         @JsonProperty("expires_in") int expiresIn) implements AuthResponse {
+    }
+
 }
