@@ -13,7 +13,7 @@
 
   <groupId>com.example</groupId>
   <artifactId>mcp-liveperson-server</artifactId>
-  <version>0.1.0</version>
+  <version>0.1.1</version>
 
   <properties>
     <java.version>21</java.version>
@@ -48,14 +48,6 @@
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
 
-    <!-- Debug Agent for reactor -->
-    <dependency>
-      <groupId>io.projectreactor</groupId>
-      <artifactId>reactor-tools</artifactId>
-      <version>3.6.0</version>
-      <scope>runtime</scope>
-    </dependency>
-
   </dependencies>
 
   <build>
@@ -67,33 +59,4 @@
     </plugins>
   </build>
 
-  <profiles>
-    <profile>
-      <id>debug-reactor</id>
-      <properties>
-        <reactor.tools.jar>${settings.localRepository}/io/projectreactor/reactor-tools/3.6.0/reactor-tools-3.6.0.jar</reactor.tools.jar>
-      </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>3.5.1</version>
-            <configuration>
-              <mainClass>com.example.mcp.McpServerApplication</mainClass>
-              <arguments/>
-              <systemProperties>
-                <systemProperty>
-                  <key>javaagent</key>
-                  <value>${reactor.tools.jar}</value>
-                </systemProperty>
-              </systemProperties>
-              <executable>java</executable>
-              <commandlineArgs>-javaagent:${reactor.tools.jar}</commandlineArgs>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>
