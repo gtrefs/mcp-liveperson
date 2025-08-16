@@ -34,26 +34,23 @@ public class ConversationTools {
         );
 
         log.info("putConsumer start");
-        Map<String, Object> consumerRes = lp.putConsumer(args.consumerId(), consumerPayload);
+        LivePersonResponse.ConsumerResponse consumerRes = lp.putConsumer(args.consumerId(), consumerPayload);
         log.info("putConsumer completed: {}", consumerRes);
 
-        Map<String, Object> conv = lp.createConversation(
+        LivePersonResponse.ConversationResponse conv = lp.createConversation(
                 args.consumerId(),
                 Map.of("channelType", "MESSAGING")
         );
         log.info("createConversation completed: {}", conv);
 
-        String conversationId = (String) conv.getOrDefault("id", conv.get("conversationId"));
+        String conversationId = conv.resolvedId();
         String mainDialogId = conversationId; // fallback
 
-        Object dialogs = conv.get("dialogs");
-        if (dialogs instanceof List<?> list && !list.isEmpty()) {
-            Object first = list.get(0);
-            if (first instanceof Map<?, ?> m) {
-                Object id = m.get("id");
-                if (id instanceof String s) {
-                    mainDialogId = s;
-                }
+        List<LivePersonResponse.ConversationResponse.Dialog> dialogs = conv.dialogs();
+        if (dialogs != null && !dialogs.isEmpty()) {
+            String id = dialogs.get(0).id();
+            if (id != null) {
+                mainDialogId = id;
             }
         }
         return new CreateConversationResult(conversationId, mainDialogId, "CREATED");
@@ -63,12 +60,14 @@ public class ConversationTools {
             name = "send_message",
             description = "Publish a PLAIN_TEXT message via REST API. If dialogId omitted, we'll resolve it from the conversation."
     )
-    public Map<String, Object> sendMessage(SendMessageArgs args) {
+    public SendMessageResult sendMessage(SendMessageArgs args) {
         Map<String, Object> body = Map.of(
                 "type", "PLAIN_TEXT",
                 "content", Map.of("text", args.text())
         );
-        return lp.publishMessage(args.consumerId(), args.conversationId(), body);
+        LivePersonResponse.PublishMessageResponse res =
+                lp.publishMessage(args.consumerId(), args.conversationId(), body);
+        return new SendMessageResult(res.conversationId(), res.dialogId(), res.messageId());
     }
 
     @Tool(
@@ -76,8 +75,9 @@ public class ConversationTools {
             description = "Close a conversation via REST API using StageUpdate."
     )
     public CloseConversationResult closeConversation(CloseConversationArgs args) {
-        // Needs headers for ETag — use a method that returns ResponseEntity<Map>
-        ResponseEntity<Map> entity = lp.getConversationEntity(args.consumerId(), args.conversationId());
+        // Needs headers for ETag — use a method that returns typed ResponseEntity
+        ResponseEntity<LivePersonResponse.ConversationResponse> entity =
+                lp.getConversationEntity(args.consumerId(), args.conversationId());
         String etag = entity.getHeaders().getFirst("ETag");
 
         lp.closeConversation(args.consumerId(), args.conversationId(), etag);
@@ -88,6 +88,7 @@ public class ConversationTools {
     public record CreateConversationArgs(String consumerId, String firstName, String lastName) {}
     public record CreateConversationResult(String conversationId, String dialogId, String status) {}
     public record SendMessageArgs(String consumerId, String conversationId, String text) {}
+    public record SendMessageResult(String conversationId, String dialogId, String messageId) {}
     public record CloseConversationArgs(String consumerId, String conversationId) {}
     public record CloseConversationResult(String conversationId, String status) {}
 }

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import reactor.core.publisher.Mono;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
@@ -37,14 +39,14 @@ public class ConsumerJwsService {
         return cache.computeIfAbsent(extConsumerId, id -> {
             String url = "https://" + idpDomain + "/api/account/" + accountId + "/consumer?v=1.0";
             String appJwt = appJwtService.getAppJwt();
-            Map response = restClient.post()
+            TokenResponse response = restClient.post()
                     .uri(url)
                     .contentType(MediaType.APPLICATION_JSON)
                     .header("Authorization", appJwt)
                     .body(Map.of("ext_consumer_id", extConsumerId))
                     .retrieve()
-                    .body(Map.class);
-            String token = (String) response.get("token");
+                    .body(TokenResponse.class);
+            String token = response.token();
             return new ConsumerIdentity(token, extractLpConsumerId(token));
         });
     }
@@ -66,4 +68,10 @@ public class ConsumerJwsService {
 
     public record ConsumerIdentity(String token, String lpConsumerId) {
     }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private sealed interface JwsResponse permits TokenResponse {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record TokenResponse(String token) implements JwsResponse {}
 }
