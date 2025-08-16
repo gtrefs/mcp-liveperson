@@ -1,0 +1,46 @@
+name: Build and Push Docker Image
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Extract project version
+        run: echo "VERSION=$(./mvnw -q -Dexec.cleanupDaemonThreads=false help:evaluate -Dexpression=project.version -DforceStdout)" >> $GITHUB_ENV
+
+      - name: Build image with buildpacks
+        run: ./mvnw -B spring-boot:build-image -Dspring-boot.build-image.imageName=gtrefs/liveperson-mcp:latest
+        # add -DskipTests if desired
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: gtrefs
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Tag and push image
+        env:
+          VERSION: ${{ env.VERSION }}
+        run: |
+          set -euo pipefail
+          SHORT_SHA=${GITHUB_SHA::12}
+          docker tag gtrefs/liveperson-mcp:latest gtrefs/liveperson-mcp:${SHORT_SHA}
+          docker push gtrefs/liveperson-mcp:latest
+          docker push gtrefs/liveperson-mcp:${SHORT_SHA}
+          if [[ "${VERSION}" != *-SNAPSHOT ]]; then
+            docker tag gtrefs/liveperson-mcp:latest gtrefs/liveperson-mcp:${VERSION}
+            docker push gtrefs/liveperson-mcp:${VERSION}
+          fi
