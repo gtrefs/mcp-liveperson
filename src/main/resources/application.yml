@@ -23,7 +23,6 @@ lp:
   auth:
     client-id: "${LP_CLIENT_ID}"
     client-secret: "${LP_CLIENT_SECRET}"
-    use-bearer-prefix: ${LP_USE_BEARER_PREFIX:false}
     renew-skew-seconds: ${LP_JWT_RENEW_SKEW:300}
   client:
     client-source: "${LP_CLIENT_SOURCE:mcp-liveperson-server}"

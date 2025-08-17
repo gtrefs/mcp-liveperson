@@ -22,7 +22,6 @@ public class AppJwtService {
     private final String clientId;
     private final String clientSecret;
     private final int renewSkewSeconds;
-    private final boolean useBearerPrefix;
 
     private final AtomicReference<Token> cached = new AtomicReference<>();
 
@@ -31,8 +30,7 @@ public class AppJwtService {
                          @Value("${lp.domains.sentinel}") String sentinelDomain,
                          @Value("${lp.auth.client-id}") String clientId,
                          @Value("${lp.auth.client-secret}") String clientSecret,
-                         @Value("${lp.auth.renew-skew-seconds:300}") int renewSkewSeconds,
-                         @Value("${lp.auth.use-bearer-prefix:false}") boolean useBearerPrefix) {
+                         @Value("${lp.auth.renew-skew-seconds:300}") int renewSkewSeconds) {
 
         this.restClient = restClientBuilder.build();
         this.accountId = accountId;
@@ -40,7 +38,6 @@ public class AppJwtService {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.renewSkewSeconds = renewSkewSeconds;
-        this.useBearerPrefix = useBearerPrefix;
     }
 
     /** Returns the Authorization header value (optionally "Bearer ...") synchronously. */
@@ -49,13 +46,13 @@ public class AppJwtService {
         Instant now = Instant.now();
 
         if (current != null && current.expiresAt().minusSeconds(renewSkewSeconds).isAfter(now)) {
-            return headerValue(current.value());
+            return current.value();
         }
 
         // Fetch a new token and cache it
         Token fresh = requestNewToken();
         cached.set(fresh);
-        return headerValue(fresh.value());
+        return fresh.value();
     }
 
     private Token requestNewToken() throws RestClientException {
@@ -75,10 +72,6 @@ public class AppJwtService {
                 .body(TokenResponse.class);
 
         return new Token(resp.accessToken(), Instant.now().plusSeconds(resp.expiresIn()));
-    }
-
-    private String headerValue(String token) {
-        return useBearerPrefix ? ("Bearer " + token) : token;
     }
 
     record Token(String value, Instant expiresAt) {}
