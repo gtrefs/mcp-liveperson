@@ -1,8 +1,8 @@
-package com.example.mcp;
+package com.gtrefs.liveperson.mcp.poc;
 
-import com.example.mcp.auth.AppJwtService;
-import com.example.mcp.auth.ConsumerJwsService;
-import com.example.mcp.auth.ConsumerJwsService.ConsumerIdentity;
+import com.gtrefs.liveperson.mcp.poc.auth.AppJwtService;
+import com.gtrefs.liveperson.mcp.poc.auth.ConsumerJwsService;
+import com.gtrefs.liveperson.mcp.poc.auth.ConsumerJwsService.ConsumerIdentity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

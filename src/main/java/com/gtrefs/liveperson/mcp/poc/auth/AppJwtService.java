@@ -1,4 +1,4 @@
-package com.example.mcp.auth;
+package com.gtrefs.liveperson.mcp.poc.auth;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

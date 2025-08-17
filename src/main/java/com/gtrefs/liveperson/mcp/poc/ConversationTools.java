@@ -1,4 +1,4 @@
-package com.example.mcp;
+package com.gtrefs.liveperson.mcp.poc;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

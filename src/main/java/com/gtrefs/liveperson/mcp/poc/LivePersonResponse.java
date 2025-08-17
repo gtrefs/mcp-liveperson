@@ -1,4 +1,4 @@
-package com.example.mcp;
+package com.gtrefs.liveperson.mcp.poc;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;

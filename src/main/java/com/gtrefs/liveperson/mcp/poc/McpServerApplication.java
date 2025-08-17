@@ -1,4 +1,4 @@
-package com.example.mcp;
+package com.gtrefs.liveperson.mcp.poc;
 
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.method.MethodToolCallbackProvider;

@@ -33,4 +33,4 @@ server:
 logging:
   level:
     root: INFO
-    com.example.mcp: INFO
+    com.gtrefs.liveperson.mcp.poc: INFO

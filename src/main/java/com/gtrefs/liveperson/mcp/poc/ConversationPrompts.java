@@ -1,4 +1,4 @@
-package com.example.mcp;
+package com.gtrefs.liveperson.mcp.poc;
 
 import java.util.List;
 
