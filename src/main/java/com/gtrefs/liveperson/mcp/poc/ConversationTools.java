@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class ConversationTools {
@@ -82,6 +83,14 @@ public class ConversationTools {
 
         lp.closeConversation(args.consumerId(), args.conversationId(), etag);
         return new CloseConversationResult(args.conversationId(), "CLOSED");
+    }
+
+    @Tool(
+            name = "generate_random_uuid",
+            description = "Generates and returns a random UUID."
+    )
+    public String generateRandomUUID() {
+        return UUID.randomUUID().toString();
     }
 
     // === Records ===
